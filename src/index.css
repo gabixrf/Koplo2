@@ -20,3 +20,10 @@ body,
 body {
   margin: 0;
 }
+
+.logo {
+  font-size: 120px;
+  font-weight: 800;
+  color: white;
+  letter-spacing: -5px;
+}
