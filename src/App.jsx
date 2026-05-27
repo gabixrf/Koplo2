@@ -1,62 +1,75 @@
-import { useState } from "react";
+import { useState } from 'react'
+import { Box } from '@mui/material'
 
-import Logo from "./components/Logo";
+// Deixamos apenas os imports necessários aqui
+import Logo from "./Componentes/Logo";
 import Dashboard from "./pages/Dashboard";
-import Footer from "./componentes/Footer";
-import FomularioCadastro from "./componentes/FomularioCadastro";
-import ListaUser from "./componentes/ListaUser"; // Importado como ListaUser
 
 function App() {
-  // Array inicial de estados
-  const [email, setEmail] = useState([]);
+  const [usuarios, setUsuarios] = useState(() => {
+    const salvos = localStorage.getItem("usuarios");
+    return salvos ? JSON.parse(salvos) : [];
+  });
 
-  // Função que recebe o novo usuário e adiciona no array
-  function adicionarEmail(novoEmail) {
-    setEmail([...email, novoEmail]);
-  }
-  
+  const [usuarioParaEditar, setUsuarioParaEditar] = useState(null);
   const [mostrarIntro, setMostrarIntro] = useState(true);
+
+  // Função para adicionar ou atualizar usuário
+  function salvarUsuario(usuarioAtualizado) {
+    if (usuarioParaEditar !== null) {
+      const novaLista = [...usuarios];
+      novaLista[usuarioParaEditar.index] = usuarioAtualizado;
+      setUsuarios(novaLista);
+      localStorage.setItem("usuarios", JSON.stringify(novaLista));
+      setUsuarioParaEditar(null); 
+    } else {
+      const novaLista = [...usuarios, usuarioAtualizado];
+      setUsuarios(novaLista);
+      localStorage.setItem("usuarios", JSON.stringify(novaLista));
+    }
+  }
+
+  // Função que ativa o modo de edição
+  function ativarEdicao(index) {
+    setUsuarioParaEditar({ ...usuarios[index], index });
+  }
 
   const terminouAnimacao = () => {
     console.log("Logo terminou!");
-
     setTimeout(() => {
       setMostrarIntro(false);
     }, 1000);
   };
 
+  // PASSO 1: Tela preta isolada com a animação da logo inicial
   if (mostrarIntro) {
     return (
-      <div
+      <Box
         style={{
           backgroundColor: "black",
           width: "100%",
           height: "100vh",
-
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
         }}
       >
         <Logo onComplete={terminouAnimacao} />
-      </div>
-
-      <div className="container">
-
-      {/* 1. Formulário de Cadastro */}
-      <FomularioCadastro adicionarEmail={adicionarEmail} />
-
-      {/* 2. Lista de Usuários (CORRIGIDO: usando o nome do import e passando a prop 'user') */}
-      <ListaUser email={email} />
-
-      {/* 3. Rodapé sempre no final */}
-      <Footer />
-
-    </div>
+      </Box>
     );
   }
 
-  return <Dashboard />;
+  // PASSO 2: Tela Principal (O Dashboard centraliza e desenha tudo no lado direito da Sidebar)
+  return (
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#0d0d0d', color: '#fff' }}>
+      <Dashboard 
+        usuarios={usuarios}
+        salvarUsuario={salvarUsuario}
+        usuarioParaEditar={usuarioParaEditar}
+        ativarEdicao={ativarEdicao}
+      />
+    </Box>
+  );
 }
 
 export default App;
